@@ -27,32 +27,37 @@ class Category < Grape::API
   end
 
 
-resource :search do
-	params do 
-     requires :payload, type: Hash, desc: "The payload consist of categoryids/latitude/longtitude/radius"
-   end
+  resource :search do
+    params do 
+      requires :payload, type: Hash, desc: "The payload consist of categoryids/latitude/longtitude/radius" do
+        requires :lat, type: Float, values: -90.0..+90.0
+        requires :lng, type: Float, values: -180.0..+180.0
+        requires :categories, type: Array[String]
+        optional :radius, type: Integer, default: 500
+      end
+    end
 
-   post do
-   		access_token = ENV['OAUTH_ACCESSTOKEN']
-		v_date = ENV['V']
-		payload = params[:payload]
-		latitude = payload["latitude"]
-		longtitude = payload["longtitude"]
-		radius = payload["radius"]
-		categories = payload["categories"]
-		items = Hash.new 
-		categories.each do |category|
-			categoryid = category["categoryid"]
-			item = category["item"]
-			uri = URI("https://api.foursquare.com/v2/venues/search?categoryid=#{categoryid}&intent=browse&ll=#{latitude},#{longtitude}&radius=#{radius}&query=#{item}&oauth_token=#{access_token}&v=20150613")			
-  			response = JSON.parse(Net::HTTP.get(uri))["response"]
-  			items = {item => response}
-   		end
+    post do
+      access_token = ENV['OAUTH_ACCESSTOKEN']
+      v_date = ENV['V']
 
-  	   items
-   end
-end
+      payload = params[:payload]
+      latitude = payload["lat"]
+      longtitude = payload["lng"]
+      radius = payload["radius"]
+      categories = payload["categories"]
 
+      uri = URI("https://api.foursquare.com/v2/venues/search?categoryid=#{categories.join(',')}&intent=browse&ll=#{latitude},#{longtitude}&radius=#{radius}&oauth_token=#{access_token}&v=20150613")
 
+      response = JSON.parse(Net::HTTP.get(uri))["response"]
+
+      response['venues']
+          .map do |c| 
+            ['contact', 'location', 'name', 'url' ].map {  |i| { i.to_sym => c[i] } }
+            .reduce { |r, i| r.merge i }
+          end
+          .to_json
+    end
+  end
 end
 
