@@ -20,9 +20,9 @@ class Category < Grape::API
       uri = URI("https://api.foursquare.com/v2/venues/categories?oauth_token=#{access_token}&v=20150613")
       response = JSON.parse(Net::HTTP.get(uri))["response"]
 
-        response['categories']
-          .map { |c| {:id => c['id'], :name => c['name'], :pluralName => c['pluralName'], :shortName => c['shortName'] } }
-          .to_json
+      response['categories']
+        .map { |c| {:id => c['id'], :name => c['name'], :pluralName => c['pluralName'], :shortName => c['shortName'] } }
+        .to_json
     end
   end
 
