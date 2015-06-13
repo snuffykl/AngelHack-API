@@ -18,7 +18,8 @@ resource :category do
 		access_token = ENV['OAUTH_ACCESSTOKEN']
 		v_date = ENV['V']
 		uri = URI("https://api.foursquare.com/v2/venues/categories?oauth_token=#{access_token}&v=20150613")
-	    Net::HTTP.get(uri)
+	    response = Net::HTTP.get(uri)
+	    JSON.parse(response)["response"]
 	end
 end
 
