@@ -1,3 +1,3 @@
-require_relative 'api/category'
+require "./lib/angelhack"
 
-run Category
+run API::Endpoints
